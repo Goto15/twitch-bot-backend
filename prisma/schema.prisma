@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Token {
+  id            String   @id @default(uuid())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  token_name    String
+  token_type    String?
+  access_token  String
+  refresh_token String?
+  scope         String?
+  expires_in    Int
+}
+
+model GameRequest {
+  id           String   @id @default(uuid())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  game_id      String
+  game         Game?
+  requester_id String
+  requester    User     @relation(fields: [requester_id], references: [id])
+  reward       Reward   @relation(fields: [reward_id], references: [id])
+  reward_id    String
+}
+
+model Game {
+  id                String      @id @default(uuid())
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+  title             String
+  critic_score      Int?
+  description       String?
+  esrb_rating       String?
+  release_date      DateTime?
+  user_score        Int?
+  length            Int?
+  completed         Boolean     @default(false)
+  blind             Boolean     @default(true)
+  votes             Vote[]
+  genres            String?
+  completion_date   DateTime?
+  status            String?     @default("Not Started")
+  review            String?
+  custom_multiplier Int?        @default(1)
+  game_request      GameRequest @relation(fields: [game_request_id], references: [id])
+  game_request_id   String      @unique
+}
+
+model Genre {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  name       String
+  multiplier Int      @default(1)
+}
+
+model Reward {
+  id               String        @id @default(uuid())
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  name             String
+  custom_reward_id String
+  GameRequest      GameRequest[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+  display_name String        @unique
+  subscribed   Boolean?
+  requests     GameRequest[]
+  votes        Vote[]
+}
+
+model Vote {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  game_id    String
+  game       Game     @relation(fields: [game_id], references: [id])
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+}
